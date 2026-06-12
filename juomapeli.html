@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>HITLER JUOMAPELI</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  :root{
+    --felt:#0b6b3a; --felt2:#085a30; --gold:#d4af37; --gold2:#f1d985;
+    --cream:#f7f1e3; --red:#c0392b; --dark:#1a1a1a;
+  }
+  html,body{ min-height:100%; }
+  body{
+    font-family:'Georgia','Times New Roman',serif;
+    background:radial-gradient(ellipse at 50% 25%, var(--felt) 0%, var(--felt2) 55%, #053d20 100%);
+    background-attachment:fixed; color:var(--cream); min-height:100dvh;
+    display:flex; flex-direction:column; align-items:center;
+    padding:max(16px,env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom));
+    overflow-x:hidden;
+  }
+  body::before{ content:""; position:fixed; inset:0; pointer-events:none; z-index:0;
+    background:repeating-linear-gradient(45deg,rgba(0,0,0,.04) 0 2px,transparent 2px 6px); opacity:.5; }
+  .wrap{ position:relative; z-index:1; width:100%; display:flex; flex-direction:column; align-items:center; }
+  h1{ font-size:clamp(1.5rem,5.5vw,2.1rem); letter-spacing:1px; text-align:center;
+    color:var(--gold2); text-shadow:0 2px 0 #000, 0 0 18px rgba(212,175,55,.4); margin-bottom:2px; }
+  .subtitle{ font-size:.85rem; color:rgba(247,241,227,.7); margin-bottom:14px; font-style:italic; text-align:center; }
+
+  .effects{ display:flex; gap:8px; flex-wrap:wrap; justify-content:center; min-height:30px; margin-bottom:12px; }
+  .badge{ font-family:system-ui,Arial,sans-serif; font-size:.72rem; font-weight:700; letter-spacing:.3px;
+    padding:6px 12px; border-radius:30px; border:1px solid var(--gold); background:rgba(0,0,0,.3);
+    color:var(--gold2); white-space:nowrap; animation:pop .25s ease; }
+  @keyframes pop{ from{ transform:scale(.7); opacity:0; } to{ transform:scale(1); opacity:1; } }
+
+  .table-area{ width:100%; max-width:430px; display:flex; flex-direction:column; align-items:center; gap:18px; }
+  .card-stage{ perspective:1200px; width:min(62vw,220px); height:min(90vw,320px); }
+  .card{ width:100%; height:100%; position:relative; transform-style:preserve-3d;
+    transition:transform .55s cubic-bezier(.4,.1,.2,1); cursor:pointer; }
+  .card.flipped{ transform:rotateY(180deg); }
+  .face{ position:absolute; inset:0; border-radius:16px; backface-visibility:hidden;
+    -webkit-backface-visibility:hidden; box-shadow:0 12px 30px rgba(0,0,0,.45), 0 2px 0 rgba(255,255,255,.15) inset; overflow:hidden; }
+  .back{ background:repeating-linear-gradient(45deg,#7b1418 0 8px,#8f1a1f 8px 16px);
+    border:8px solid var(--cream); display:flex; align-items:center; justify-content:center; }
+  .back::after{ content:"♠ ♥ ♣ ♦"; color:var(--gold2); font-size:1.1rem; letter-spacing:4px;
+    border:3px double var(--gold2); border-radius:10px; padding:38px 14px;
+    text-shadow:0 1px 2px #000; writing-mode:vertical-rl; text-orientation:upright; }
+  .front{ background:linear-gradient(160deg,#fffdf8,#f1ece0); transform:rotateY(180deg);
+    border:2px solid #d8d2c2; color:var(--dark); display:flex; flex-direction:column; padding:12px; }
+  .corner{ position:absolute; font-weight:bold; line-height:.9; text-align:center; }
+  .corner .r{ font-size:1.5rem; } .corner .s{ font-size:1.4rem; }
+  .corner.tl{ top:10px; left:10px; } .corner.br{ bottom:10px; right:10px; transform:rotate(180deg); }
+  .center-suit{ flex:1; display:flex; align-items:center; justify-content:center; font-size:clamp(3.5rem,16vw,5.5rem); }
+  .red{ color:var(--red); } .black{ color:#1a1a1a; }
+
+  .rule{ width:100%; max-width:370px; min-height:120px;
+    background:linear-gradient(160deg,rgba(0,0,0,.35),rgba(0,0,0,.18));
+    border:1px solid var(--gold); border-radius:14px; padding:16px 18px; text-align:center;
+    box-shadow:0 6px 18px rgba(0,0,0,.3); transition:opacity .3s; }
+  .rule .tag{ font-size:.72rem; letter-spacing:2px; text-transform:uppercase; color:var(--gold2); font-family:system-ui,Arial,sans-serif; }
+  .rule h2{ font-size:1.45rem; color:#fff; margin:4px 0 8px; text-shadow:0 1px 3px #000; }
+  .rule p{ font-size:1rem; line-height:1.5; color:rgba(247,241,227,.93); }
+  .rule .keep{ display:block; margin-top:8px; font-size:.8rem; color:var(--gold2); font-style:italic; }
+  .rule.dim{ opacity:.55; }
+
+  .controls{ display:flex; gap:12px; margin-top:2px; flex-wrap:wrap; justify-content:center; }
+  button.act{ font-family:'Georgia',serif; font-size:1.05rem; font-weight:bold; padding:14px 26px;
+    border-radius:40px; border:2px solid var(--gold); cursor:pointer; transition:transform .1s, box-shadow .2s;
+    color:var(--dark); background:linear-gradient(180deg,var(--gold2),var(--gold));
+    box-shadow:0 5px 0 #9c7d1f, 0 8px 16px rgba(0,0,0,.35); }
+  button.act:active{ transform:translateY(3px); box-shadow:0 2px 0 #9c7d1f, 0 4px 10px rgba(0,0,0,.35); }
+  button.ghost{ all:unset; cursor:pointer; color:var(--gold2); border:1px solid rgba(212,175,55,.6);
+    border-radius:40px; font-size:.92rem; padding:10px 18px; font-family:system-ui,Arial,sans-serif; }
+  button.act:disabled{ opacity:.4; cursor:default; box-shadow:none; }
+
+  .meta{ font-size:.85rem; color:rgba(247,241,227,.7); margin-top:8px; font-family:system-ui,Arial,sans-serif; }
+  .meta b{ color:var(--gold2); }
+  .foot{ font-size:.72rem; color:rgba(247,241,227,.45); margin-top:14px; text-align:center; max-width:340px; font-family:system-ui,Arial,sans-serif; }
+
+  @media(min-width:760px){ .table-area{ max-width:560px; } .card-stage{ width:240px; height:348px; } .rule{ max-width:440px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1 id="title">HITLER JUOMAPELI</h1>
+  <div class="subtitle" id="sub">Nosta kortti — tee mitä se sanoo 🍻</div>
+
+  <div class="effects" id="effects"></div>
+
+  <div class="table-area">
+    <div class="card-stage" id="stage">
+      <div class="card" id="card">
+        <div class="face back"></div>
+        <div class="face front">
+          <div class="corner tl"><div class="r" id="tl-r"></div><div class="s" id="tl-s"></div></div>
+          <div class="center-suit" id="center"></div>
+          <div class="corner br"><div class="r" id="br-r"></div><div class="s" id="br-s"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="rule dim" id="rule">
+      <div class="tag">Aletaaks</div><h2>Pakka sekotettu</h2>
+      <p>Paina “Nosta kortti” ni päästään vauhtiin. Vuorot kiertää pöydän ympäri.</p>
+    </div>
+    <div class="controls">
+      <button id="draw" class="act">Nosta kortti</button>
+      <button id="reset" class="ghost">Sekota uusiks</button>
+    </div>
+    <div class="meta">Kortteja jäljellä: <b id="remaining">52</b> / 52</div>
+  </div>
+
+  <div class="foot" id="foot">Pelaa fiksusti — juokaa vettä välissä, eikä kenenkään oo pakko vetää jos ei halua. Vaihtoehtona toimii myös limu tai vesi. 18+</div>
+</div>
+
+<script>
+const SUITS=[{s:"♠",c:"black"},{s:"♥",c:"red"},{s:"♦",c:"red"},{s:"♣",c:"black"}];
+const RANKLABEL={1:"A",11:"J",12:"Q",13:"K"};
+const rankLabel=r=>RANKLABEL[r]||String(r);
+
+const RULES={
+  1:{n:"Vesiputous",t:"Kaikki rupee juomaan samaan aikaan. Kukaan ei saa lopettaa ennen ku sun oikeel puolel oleva tyyppi lopettaa."},
+  2:{n:"Anna 3",t:"Valitse joku ja se vetää 3 huikkaa. Sun valinta."},
+  3:{n:"Ota 3",t:"Sä ite vedät 3 huikkaa. Kippis 🥃"},
+  4:{n:"Hitler",t:"Kaikki nostaa käden ylös ja huutaa “HITLER!” Se ku on viimisenä vetää 3 huikkaa."},
+  5:{n:"Hitler",t:"Kaikki nostaa käden ylös ja huutaa “HITLER!” Se ku on viimisenä vetää 3 huikkaa."},
+  6:{n:"1-2-3",t:"Sä juot 1, seuraava 2, sit seuraava 3, ja näin jatketaan ympäri pöytää."},
+  7:{n:"Kategoria",t:"Keksi kategoria (esim. automerkit). Mennään vuoron perään. Ku joku tyssää, se vetää 3 huikkaa."},
+  8:{n:"Sääntö",t:"Keksi sääntö jota kaikki noudattaa. Ku rikot → 3 huikkaa.",keep:"Voimassa kunnes joku nostaa uuden Sääntö-kortin."},
+  9:{n:"Huora",t:"Valitse ittelles “huora” joka juo aina ku säkin juot.",keep:"Voimassa kunnes joku nostaa uuden Huora-kortin."},
+  10:{n:"Tarina",t:"Aloita tarina yhellä sanalla. Seuraava toistaa kaiken ja lisää yhen sanan. Ku joku mokaa → 3 huikkaa."},
+  11:{n:"Kysymysmestari",t:"Sä kyselet tyyppejä, ja ne saa vastata vaan peliin liittyviin kysymyksiin. Ku joku vastaa muuhun → 3 huikkaa.",keep:"Voimassa kunnes joku nostaa uuden Kysymysmestari-kortin."},
+  12:{n:"Riimi",t:"Sano sana, seuraava keksii siihen riimin. Ku joku tyssää → 3 huikkaa."},
+  13:{n:"Kuningashörppy",t:"Sä vedät yhen huikan jokaisen muun pelaajan juomasta. Sä oot nyt kuningas 👑"}
+};
+const PERSIST={8:"📜 Sääntö voimassa",9:"💋 Huora voimassa",11:"❓ Kysymysmestari voimassa"};
+
+let deck=[], activeEffects={}, busy=false, faceUp=false;
+
+const card=document.getElementById('card'), ruleBox=document.getElementById('rule');
+const drawBtn=document.getElementById('draw'), resetBtn=document.getElementById('reset');
+const remainingEl=document.getElementById('remaining'), effectsEl=document.getElementById('effects');
+
+function buildDeck(){ deck=[]; for(const su of SUITS) for(let r=1;r<=13;r++) deck.push({r,...su});
+  for(let i=deck.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [deck[i],deck[j]]=[deck[j],deck[i]]; } }
+
+function renderEffects(){ effectsEl.innerHTML="";
+  for(const r of Object.keys(activeEffects)){ const b=document.createElement('div'); b.className='badge'; b.textContent=PERSIST[r]; effectsEl.appendChild(b); } }
+
+function setFront(c){ const lbl=rankLabel(c.r);
+  document.getElementById('tl-r').textContent=lbl; document.getElementById('br-r').textContent=lbl;
+  document.getElementById('tl-s').textContent=c.s; document.getElementById('br-s').textContent=c.s;
+  document.getElementById('center').textContent=c.s;
+  for(const el of [document.querySelector('.corner.tl'),document.querySelector('.corner.br'),document.getElementById('center')]){
+    el.classList.remove('red','black'); el.classList.add(c.c); } }
+
+function showRule(c){ const ru=RULES[c.r]; ruleBox.classList.remove('dim');
+  ruleBox.innerHTML=`<div class="tag">${rankLabel(c.r)} ${c.s}</div><h2>${ru.n}</h2><p>${ru.t}`+(ru.keep?`<span class="keep">${ru.keep}</span>`:``)+`</p>`;
+  if(PERSIST[c.r]){ activeEffects[c.r]=true; renderEffects(); } }
+
+function draw(){ if(busy||deck.length===0) return; busy=true;
+  const next=()=>{ const c=deck.pop(); setFront(c); card.classList.add('flipped'); faceUp=true;
+    setTimeout(()=>{ showRule(c); remainingEl.textContent=deck.length;
+      if(deck.length===0){ drawBtn.disabled=true; drawBtn.textContent="Pakka loppu"; } busy=false; },280); };
+  if(faceUp){ card.classList.remove('flipped'); faceUp=false; setTimeout(next,560); } else next(); }
+
+function resetGame(){ buildDeck(); card.classList.remove('flipped'); faceUp=false; busy=false;
+  drawBtn.disabled=false; drawBtn.textContent="Nosta kortti"; remainingEl.textContent=deck.length;
+  activeEffects={}; renderEffects(); ruleBox.classList.add('dim');
+  ruleBox.innerHTML=`<div class="tag">Aletaaks</div><h2>Pakka sekotettu</h2><p>Paina “Nosta kortti” ni päästään vauhtiin. Vuorot kiertää pöydän ympäri.</p>`; }
+
+drawBtn.addEventListener('click',draw);
+card.addEventListener('click',()=>{ if(faceUp) draw(); });
+resetBtn.addEventListener('click',resetGame);
+buildDeck(); renderEffects();
+</script>
+</body>
+</html>
